@@ -7,14 +7,16 @@ import com.google.gson.annotations.SerializedName
  */
 
 
-class Responce(
+class SpreadServiceResponse(
     @SerializedName("records")
-    val payload: List<SpreadResponce>
+    val payload: List<SpreadInfo>
 )
 
-class SpreadResponce(
+class SpreadInfo(
+    @SerializedName("dateRep")
+    val fullDate:String,
     @SerializedName("day")
-    val day: String,
+    val day: Int,
     @SerializedName("month")
     val month: Int,
     @SerializedName("year")
