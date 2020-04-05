@@ -4,18 +4,19 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.navArgs
 import com.example.dailyactualstats.R
 import com.example.dailyactualstats.base.BaseFragment
 import com.example.dailyactualstats.ui.adapters.Spread
 import com.example.dailyactualstats.ui.adapters.SpreadAdapter
 import com.example.dailyactualstats.ui.viewmodels.MainViewModel
-import kotlinx.android.synthetic.main.main_fragment.*
+import kotlinx.android.synthetic.main.fragment_main.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
-class MainFragment:BaseFragment(R.layout.main_fragment) {
+class MainFragment:BaseFragment(R.layout.fragment_main) {
 
     private val viewModel: MainViewModel by viewModel()
 

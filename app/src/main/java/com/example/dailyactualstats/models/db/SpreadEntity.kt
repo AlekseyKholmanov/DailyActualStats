@@ -22,11 +22,7 @@ data class SpreadEntity(
 fun SpreadInfo.toEntity(): SpreadEntity {
     return SpreadEntity(
         id = "$fullDate$countryCode",
-        date = DateTime().apply {
-            withDayOfMonth(day)
-            withMonthOfYear(month)
-            withYear(year)
-        },
+        date = DateTime(year,month,day,0,0),
         cases = cases,
         country = country,
         countryCode = countryCode,

@@ -7,7 +7,20 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        tools:layout="@layout/main_fragment"
+        tools:layout="@layout/fragment_main"
         android:name="com.example.dailyactualstats.ui.fragments.MainFragment"
-        android:label="MainFragment" />
+        android:label="MainFragment" >
+        <action
+            android:id="@+id/action_mainFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.example.dailyactualstats.ui.fragments.DetailsFragment"
+        android:label="DetailsFragment"
+        tools:layout="@layout/fragment_details">
+        <argument
+            android:name="countryCode"
+            app:argType="string" />
+    </fragment>
 </navigation>
