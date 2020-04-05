@@ -9,7 +9,7 @@ import org.joda.time.DateTime
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
 @Entity
-class SpreadEntity(
+data class SpreadEntity(
     @PrimaryKey(autoGenerate = false)
     val id: String,
     val date: DateTime,

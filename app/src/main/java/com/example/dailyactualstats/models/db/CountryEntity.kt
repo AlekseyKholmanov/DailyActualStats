@@ -8,7 +8,7 @@ import com.example.dailyactualstats.models.api.CountryServiceResponse
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
 @Entity
-class CountryEntity (
+data class CountryEntity (
     @PrimaryKey(autoGenerate = false)
     val id: String,
     val code: String,

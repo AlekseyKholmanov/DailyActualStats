@@ -17,11 +17,7 @@ val databaseModule = module {
             .build()
     }
 
-    single {
-        get<AppDatabase>().countryDAO()
-    }
-
-    single {
-        get<AppDatabase>().spreadDAO()
-    }
+    single { get<AppDatabase>().countryDAO() }
+    single { get<AppDatabase>().spreadDAO() }
+    single { get<AppDatabase>().cacheMarkerDAO() }
 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.dailyactualstats.api.CountryService
 import com.example.dailyactualstats.api.SpreadService
 import com.example.dailyactualstats.models.api.CountryServiceResponse
+import com.example.dailyactualstats.repository.SpreadRepository
 import com.example.dailyactualstats.ui.adapters.Spread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,7 +17,7 @@ import kotlinx.coroutines.withContext
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
 class MainViewModel(
-    private val api: SpreadService,
+    private val spreadRepository: SpreadRepository,
     private val countryService: CountryService
 ) : ViewModel() {
 
@@ -35,7 +36,7 @@ class MainViewModel(
     private fun getInfo() {
         viewModelScope.launch {
             val resp = withContext(Dispatchers.IO) {
-                api.getSpread().payload.groupBy {
+                spreadRepository.getSpreadInfo().groupBy {
                     it.country
                 }.map { (country, statistic) ->
                     Spread(country, statistic.sumBy { it.cases })
