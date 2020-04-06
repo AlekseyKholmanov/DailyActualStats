@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.navArgs
+import androidx.navigation.fragment.findNavController
 import com.example.dailyactualstats.R
 import com.example.dailyactualstats.base.BaseFragment
 import com.example.dailyactualstats.ui.adapters.Spread
@@ -16,19 +16,24 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 /**
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
-class MainFragment:BaseFragment(R.layout.fragment_main) {
+class MainFragment : BaseFragment(R.layout.fragment_main) {
 
     private val viewModel: MainViewModel by viewModel()
+
+    private val countryClickListener = { countryCode: String ->
+        val destination = MainFragmentDirections.actionMainFragmentToDetailsFragment(countryCode)
+        findNavController().navigate(destination)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.info.observe(viewLifecycleOwner, Observer(::updateInfo))
-        val adapter = SpreadAdapter(context = requireContext())
+        val adapter = SpreadAdapter(context = requireContext(), countryClickListener = countryClickListener)
         spreadRecyclerView.adapter = adapter
     }
 
     private fun updateInfo(spreads: List<Spread>) {
-        Log.d("M_MainFragment","size: ${spreads.size}")
+        Log.d("M_MainFragment", "size: ${spreads.size}")
         (spreadRecyclerView.adapter as SpreadAdapter).setItems(spreads)
     }
 }

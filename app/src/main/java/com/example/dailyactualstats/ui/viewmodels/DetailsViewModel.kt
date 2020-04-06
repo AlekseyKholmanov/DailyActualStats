@@ -37,7 +37,7 @@ class DetailsViewModel(
                         it.deaths,
                         it.cases
                     )
-                }, info.sumBy { it.deaths }, info.sumBy { it.deaths })
+                }, info.sumBy { it.cases }, info.sumBy { it.deaths })
             }
             _info.value = resp
         }
@@ -46,8 +46,8 @@ class DetailsViewModel(
     fun getSpreadInfo(countryCode: String) {
         viewModelScope.launch {
             val response = withContext(Dispatchers.IO) {
-                countryRepository.getCountryInfo()
-                    .first { it.code == countryCode }
+                val country = countryRepository.getCountryInfo()
+                   return@withContext country.first { it.code == countryCode }
             }
             _country.value = response
         }

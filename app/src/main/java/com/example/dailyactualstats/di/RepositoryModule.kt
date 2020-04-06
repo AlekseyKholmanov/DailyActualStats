@@ -1,5 +1,6 @@
 package com.example.dailyactualstats.di
 
+import com.example.dailyactualstats.repository.CountryRepository
 import com.example.dailyactualstats.repository.SpreadRepository
 import org.koin.dsl.module
 
@@ -9,5 +10,6 @@ import org.koin.dsl.module
 val repositoryModule = module {
 
     single { SpreadRepository(get(), get()) }
+    single { CountryRepository(get(), get()) }
 
 }

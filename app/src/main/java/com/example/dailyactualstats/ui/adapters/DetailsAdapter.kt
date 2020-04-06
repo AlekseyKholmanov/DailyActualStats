@@ -42,7 +42,7 @@ class DetailsAdapter(
         fun bind(info: DetailsInfo) {
             val infectedText = "Infected: ${info.infected}"
             val deathText = "Death: ${info.death}"
-            date.text = info.date.toString()
+            date.text = info.date.toString("dd.MM.yyyy")
             infected.text =  infectedText
             death.text = deathText
         }

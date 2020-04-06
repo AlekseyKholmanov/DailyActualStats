@@ -13,11 +13,13 @@ import com.example.dailyactualstats.R
  */
 class SpreadAdapter(
     private val items: MutableList<Spread> = mutableListOf(),
-    val context: Context
+    val context: Context,
+    private val countryClickListener: (String) -> Unit
 ) : RecyclerView.Adapter<SpreadHolder>() {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SpreadHolder {
         val viewType = LayoutInflater.from(context).inflate(R.layout.item_spread, parent, false)
-        return SpreadHolder(viewType)
+        return SpreadHolder(viewType, countryClickListener)
     }
 
     override fun getItemCount(): Int = items.size
@@ -33,15 +35,18 @@ class SpreadAdapter(
     }
 }
 
-class SpreadHolder(view: View) : RecyclerView.ViewHolder(view) {
+class SpreadHolder(view: View, private val countryClickListener: (String) -> Unit) : RecyclerView.ViewHolder(view) {
 
     private val country: TextView = view.findViewById(R.id.country)
-    private val infected: TextView = view.findViewById(R.id.infected)
+    private val infected: TextView = view.findViewById(R.id.death)
 
     fun bind(spread: Spread) {
         country.text = spread.country
         infected.text = spread.infected.toString()
+        itemView.setOnClickListener {
+            countryClickListener(spread.countryCode)
+        }
     }
 }
 
-class Spread(val country: String, val infected: Int)
+class Spread(val country: String, val infected: Int, val countryCode:String)

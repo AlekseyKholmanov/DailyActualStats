@@ -11,7 +11,7 @@ import com.example.dailyactualstats.models.db.toEntity
 class CountryRepository(val dao: CountryDao, val api: CountryService) {
 
     suspend fun getCountryInfo(): List<CountryEntity> {
-        return getCountryFromDb() ?: getCountryFromApi()
+        return if (getCountryFromDb().isNullOrEmpty()) getCountryFromApi() else getCountryFromDb()!!
     }
 
     private suspend fun getCountryFromApi(): List<CountryEntity> {

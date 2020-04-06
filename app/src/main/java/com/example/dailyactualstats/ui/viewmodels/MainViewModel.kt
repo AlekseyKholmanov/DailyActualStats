@@ -39,7 +39,7 @@ class MainViewModel(
                 spreadRepository.getSpreadInfo().groupBy {
                     it.country
                 }.map { (country, statistic) ->
-                    Spread(country, statistic.sumBy { it.cases })
+                    Spread(country, statistic.sumBy { it.cases }, statistic.first().countryCode)
                 }.sortedByDescending { it.infected }
             }
             _info.value = resp
@@ -50,7 +50,7 @@ class MainViewModel(
         viewModelScope.launch {
             val response = withContext(Dispatchers.IO){
                 countryService.getCountriesInfo()
-                    .map { Spread(it.country, it.population) }
+                    .map { Spread(it.country, it.population, it.code) }
             }
             _info.value = response
         }
