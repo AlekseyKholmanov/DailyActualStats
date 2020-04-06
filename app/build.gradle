@@ -66,6 +66,7 @@ dependencies {
     // Coil
     implementation "io.coil-kt:coil-base:0.9.5"
     implementation "io.coil-kt:coil:0.9.5"
+    implementation "io.coil-kt:coil-svg:0.9.5"
 
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.7.2'
