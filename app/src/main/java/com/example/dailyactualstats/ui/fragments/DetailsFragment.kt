@@ -10,6 +10,7 @@ import com.example.dailyactualstats.R
 import com.example.dailyactualstats.base.BaseFragment
 import com.example.dailyactualstats.models.db.CountryEntity
 import com.example.dailyactualstats.ui.adapters.DetailsAdapter
+import com.example.dailyactualstats.ui.adapters.items.DetailsCoronaItem
 import com.example.dailyactualstats.ui.viewmodels.DetailsViewModel
 import kotlinx.android.synthetic.main.fragment_details.*
 import org.koin.android.ext.android.inject
@@ -39,9 +40,11 @@ class DetailsFragment : BaseFragment(R.layout.fragment_details) {
         detailsRecyclerView.adapter = adapter
     }
 
-    private fun setSpreadInfo(triple: Triple<List<DetailsAdapter.DetailsInfo>, Int, Int>) {
-        val infected = "Total infected: ${triple.second}"
-        val death = "Total death: ${triple.third}"
+    private fun setSpreadInfo(triple: Triple<List<DetailsCoronaItem>, Int, Int>) {
+        val emojiDead = String(Character.toChars(0x1F480))
+        val emojiInfected = String(Character.toChars(0x1F912))
+        val infected = "Total $emojiInfected    : ${triple.second}"
+        val death = "Total $emojiDead: ${triple.third}"
         infectedTotal.text = infected
         deathTotal.text = death
         (detailsRecyclerView.adapter as DetailsAdapter).setItems(triple.first)

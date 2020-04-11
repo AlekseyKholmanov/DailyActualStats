@@ -19,10 +19,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainFragment : BaseFragment(R.layout.fragment_main) {
 
     private val viewModel: MainViewModel by viewModel()
-
-    private val countryClickListener = { countryCode: String ->
-        val destination = MainFragmentDirections.actionMainFragmentToDetailsFragment(countryCode)
-        findNavController().navigate(destination)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.getInfo()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -30,10 +29,21 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
         viewModel.info.observe(viewLifecycleOwner, Observer(::updateInfo))
         val adapter = SpreadAdapter(context = requireContext(), countryClickListener = countryClickListener)
         spreadRecyclerView.adapter = adapter
+        refreshLayout.setOnRefreshListener {
+            viewModel.getInfo(force = true)
+        }
     }
 
-    private fun updateInfo(spreads: List<Spread>) {
-        Log.d("M_MainFragment", "size: ${spreads.size}")
-        (spreadRecyclerView.adapter as SpreadAdapter).setItems(spreads)
+    private val countryClickListener = { countryCode: String ->
+        val destination = MainFragmentDirections.actionMainFragmentToDetailsFragment(countryCode)
+        findNavController().navigate(destination)
+    }
+
+    private fun updateInfo(state: MainViewModel.ViewState) {
+        refreshLayout.isRefreshing = state.loading
+
+        val items = state.success ?: return
+        totalCount.text = items.sumBy { it.infected }.toString()
+        (spreadRecyclerView.adapter as SpreadAdapter).setItems(items)
     }
 }

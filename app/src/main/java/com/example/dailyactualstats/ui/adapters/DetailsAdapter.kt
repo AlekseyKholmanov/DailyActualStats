@@ -7,13 +7,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailyactualstats.R
-import org.joda.time.DateTime
+import com.example.dailyactualstats.ui.adapters.items.DetailsCoronaItem
 
 /**
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
 class DetailsAdapter(
-    private val items: MutableList<DetailsInfo> = mutableListOf(),
+    private val items: MutableList<DetailsCoronaItem> = mutableListOf(),
     val context: Context
 ) : RecyclerView.Adapter<DetailsAdapter.DetailsHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailsHolder {
@@ -27,7 +27,7 @@ class DetailsAdapter(
         holder.bind(items[position])
     }
 
-    fun setItems(newItems: List<DetailsInfo>) {
+    fun setItems(newItems: List<DetailsCoronaItem>) {
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()
@@ -39,7 +39,7 @@ class DetailsAdapter(
         private val infected: TextView = view.findViewById(R.id.infected)
         private val death: TextView = view.findViewById(R.id.death)
 
-        fun bind(info: DetailsInfo) {
+        fun bind(info: DetailsCoronaItem) {
             val infectedText = "Infected: ${info.infected}"
             val deathText = "Death: ${info.death}"
             date.text = info.date.toString("dd.MM.yyyy")
@@ -48,8 +48,5 @@ class DetailsAdapter(
         }
     }
 
-    class DetailsInfo(
-        val date: DateTime,
-        val death:Int,
-        val infected: Int)
+
 }

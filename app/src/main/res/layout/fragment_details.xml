@@ -19,31 +19,22 @@
             android:id="@+id/collapsingToolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="bottom|end"
             android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
+            app:expandedTitleGravity="bottom|end"
             app:expandedTitleMarginEnd="20dp"
             app:expandedTitleMarginStart="10dp"
-            app:expandedTitleGravity="top"
-            android:layout_gravity="bottom|end"
+            app:expandedTitleTextAppearance="@android:color/transparent"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <ImageView
                 android:id="@+id/flag"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:scaleType="centerCrop"
                 android:fitsSystemWindows="true"
+                android:scaleType="centerCrop"
                 app:layout_collapseMode="parallax" />
-
-            <TextView
-                android:id="@+id/countryName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                android:textSize="30sp"
-                tools:text="RUSSIA" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"

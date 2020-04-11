@@ -17,10 +17,13 @@ class SpreadRepository(
 
     override fun getDatabaseAccessObject(database: AppDatabase): SpreadDao = database.spreadDAO()
 
-    override val cacheDuration: Duration = Duration.standardDays(1)
+    override val cacheDuration: Duration = Duration.standardHours(12)
     override val defaultCacheKey: String = "SpreadRepository"
 
-    suspend fun getSpreadInfo(): List<SpreadEntity> {
+    suspend fun getSpreadInfo(force:Boolean = false): List<SpreadEntity> {
+        if(force){
+            return getSpreadFromApi()
+        }
         return if (isCacheActualAsync()) {
             getSpreadFromDb() ?: getSpreadFromApi()
         } else{

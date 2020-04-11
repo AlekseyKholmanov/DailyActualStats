@@ -7,7 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.dailyactualstats.models.db.CountryEntity
 import com.example.dailyactualstats.repository.CountryRepository
 import com.example.dailyactualstats.repository.SpreadRepository
-import com.example.dailyactualstats.ui.adapters.DetailsAdapter
+import com.example.dailyactualstats.ui.adapters.items.DetailsCoronaItem
+import com.example.dailyactualstats.ui.adapters.items.toItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,34 +21,30 @@ class DetailsViewModel(
     private val spreadRepository: SpreadRepository
 ) : ViewModel() {
 
-    private val _info = MutableLiveData<Triple<List<DetailsAdapter.DetailsInfo>, Int, Int>>()
-    val info: LiveData<Triple<List<DetailsAdapter.DetailsInfo>, Int, Int>> = _info
+    private val _info = MutableLiveData<Triple<List<DetailsCoronaItem>, Int, Int>>()
+    val info: LiveData<Triple<List<DetailsCoronaItem>, Int, Int>> = _info
 
     private val _country = MutableLiveData<CountryEntity>()
     val country: LiveData<CountryEntity> = _country
 
-    fun getCountryInfo(countryCode: String) {
+    fun getSpreadInfo(countryCode: String) {
         viewModelScope.launch {
             val resp = withContext(Dispatchers.IO) {
                 val info = spreadRepository.getSpreadInfo()
                     .filter { it.countryCode == countryCode }
                 return@withContext Triple(info.map {
-                    DetailsAdapter.DetailsInfo(
-                        it.date,
-                        it.deaths,
-                        it.cases
-                    )
+                    it.toItem()
                 }, info.sumBy { it.cases }, info.sumBy { it.deaths })
             }
             _info.value = resp
         }
     }
 
-    fun getSpreadInfo(countryCode: String) {
+    fun getCountryInfo(countryCode: String) {
         viewModelScope.launch {
             val response = withContext(Dispatchers.IO) {
                 val country = countryRepository.getCountryInfo()
-                   return@withContext country.first { it.code == countryCode }
+                return@withContext country.first { it.code == countryCode }
             }
             _country.value = response
         }

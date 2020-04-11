@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dailyactualstats.api.CountryService
-import com.example.dailyactualstats.api.SpreadService
 import com.example.dailyactualstats.models.api.CountryServiceResponse
 import com.example.dailyactualstats.repository.SpreadRepository
 import com.example.dailyactualstats.ui.adapters.Spread
@@ -21,38 +20,32 @@ class MainViewModel(
     private val countryService: CountryService
 ) : ViewModel() {
 
-    init {
-        getInfo()
-//        getCountry()
-    }
 
-    private val _info = MutableLiveData<List<Spread>>()
-    val info: LiveData<List<Spread>> = _info
+
+    private val _info = MutableLiveData(ViewState())
+    val info: LiveData<ViewState> = _info
 
     private val _country = MutableLiveData<List<CountryServiceResponse>>()
     val country: LiveData<List<CountryServiceResponse>> = _country
 
 
-    private fun getInfo() {
+    fun getInfo(force: Boolean = false) {
+        _info.value = ViewState(loading = true)
         viewModelScope.launch {
             val resp = withContext(Dispatchers.IO) {
-                spreadRepository.getSpreadInfo().groupBy {
-                    it.country
-                }.map { (country, statistic) ->
-                    Spread(country, statistic.sumBy { it.cases }, statistic.first().countryCode)
-                }.sortedByDescending { it.infected }
+                spreadRepository.getSpreadInfo(force)
+                    .groupBy {
+                        it.country
+                    }.map { (country, statistic) ->
+                        Spread(country, statistic.sumBy { it.cases }, statistic.first().countryCode)
+                    }.sortedByDescending { it.infected }
             }
-            _info.value = resp
+            _info.value = ViewState(loading = false, success = resp)
         }
     }
 
-    private fun getCountry(){
-        viewModelScope.launch {
-            val response = withContext(Dispatchers.IO){
-                countryService.getCountriesInfo()
-                    .map { Spread(it.country, it.population, it.code) }
-            }
-            _info.value = response
-        }
-    }
+    class ViewState(
+        val loading: Boolean = false,
+        val success: List<Spread>? = null
+    )
 }
