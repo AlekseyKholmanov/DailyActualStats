@@ -2,8 +2,14 @@ package com.example.dailyactualstats.base
 
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.NavigationUI
+import com.example.dailyactualstats.R
+import com.example.dailyactualstats.extension.bindView
 import com.example.dailyactualstats.extension.hideSoftKeybord
 
 /**
@@ -14,12 +20,23 @@ abstract class BaseFragment : Fragment {
 
     constructor(@LayoutRes layoutRes: Int) : super(layoutRes)
 
-    protected val appCompatActivity
-        get() = requireActivity() as AppCompatActivity
+    private val appbarConfig = AppBarConfiguration(setOf(R.id.mainFragment))
 
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        requireActivity().hideSoftKeybord(requireView())
+    protected fun initToolbar(title: String = ""): Toolbar {
+        setHasOptionsMenu(true)
+        val toolbar: Toolbar = requireView().findViewById(R.id.toolbar)
+        with(requireActivity() as AppCompatActivity) {
+            setSupportActionBar(toolbar)
+            supportActionBar?.setDisplayShowTitleEnabled(title.isNotEmpty())
+            if (title.isNotEmpty()) {
+                setTitle(title)
+            }
+        }
+        NavigationUI.setupWithNavController(
+            toolbar,
+            findNavController(),
+            appbarConfig
+        )
+        return toolbar
     }
 }

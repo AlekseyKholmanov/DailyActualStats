@@ -1,8 +1,12 @@
 package com.example.dailyactualstats.ui.fragments
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.ImageLoader
 import coil.api.load
@@ -34,12 +38,26 @@ class DetailsFragment : BaseFragment(R.layout.fragment_details) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initToolbar()
         viewModel.country.observe(viewLifecycleOwner, Observer(::setCountryInfo))
         viewModel.info.observe(viewLifecycleOwner, Observer(::setSpreadInfo))
         val adapter = DetailsAdapter(context = requireContext())
         detailsRecyclerView.adapter = adapter
     }
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.main_menu, menu)
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.openCharts -> {
+                val direction = DetailsFragmentDirections.actionDetailsFragmentToChartFragment(args.countryCode)
+                findNavController().navigate(direction)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
     private fun setSpreadInfo(triple: Triple<List<DetailsCoronaItem>, Int, Int>) {
         val emojiDead = String(Character.toChars(0x1F480))
         val emojiInfected = String(Character.toChars(0x1F912))

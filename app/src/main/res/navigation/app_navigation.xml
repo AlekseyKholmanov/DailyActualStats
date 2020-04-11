@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_mainFragment_to_detailsFragment"
             app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_chartFragment"
+            app:destination="@id/chartFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
@@ -21,6 +24,17 @@
         tools:layout="@layout/fragment_details">
         <argument
             android:name="countryCode"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_detailsFragment_to_chartFragment"
+            app:destination="@id/chartFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chartFragment"
+        android:name="com.example.dailyactualstats.ui.fragments.ChartFragment"
+        android:label="ChartFragment" >
+        <argument
+            android:name="CountryCode"
             app:argType="string" />
     </fragment>
 </navigation>

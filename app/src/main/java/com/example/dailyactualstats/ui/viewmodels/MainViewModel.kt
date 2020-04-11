@@ -16,17 +16,11 @@ import kotlinx.coroutines.withContext
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
 class MainViewModel(
-    private val spreadRepository: SpreadRepository,
-    private val countryService: CountryService
+    private val spreadRepository: SpreadRepository
 ) : ViewModel() {
-
-
 
     private val _info = MutableLiveData(ViewState())
     val info: LiveData<ViewState> = _info
-
-    private val _country = MutableLiveData<List<CountryServiceResponse>>()
-    val country: LiveData<List<CountryServiceResponse>> = _country
 
 
     fun getInfo(force: Boolean = false) {
