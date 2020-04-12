@@ -4,10 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dailyactualstats.api.CountryService
-import com.example.dailyactualstats.models.api.CountryServiceResponse
 import com.example.dailyactualstats.repository.SpreadRepository
-import com.example.dailyactualstats.ui.adapters.Spread
+import com.example.dailyactualstats.ui.adapters.items.Spread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

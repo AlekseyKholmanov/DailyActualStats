@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/openCharts"
+        app:iconTint="@color/colorAccent"
         android:icon="@drawable/ic_show_chart"
         android:title="@string/graph"
         app:showAsAction="always" />

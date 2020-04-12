@@ -1,5 +1,6 @@
 package com.example.dailyactualstats.ui.fragments
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -10,6 +11,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.dailyactualstats.R
 import com.example.dailyactualstats.base.BaseFragment
 import com.example.dailyactualstats.ui.adapters.SpreadAdapter
+import com.example.dailyactualstats.ui.adapters.items.Spread
+import com.example.dailyactualstats.ui.dialogs.ProgressDialog
 import com.example.dailyactualstats.ui.viewmodels.MainViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -20,6 +23,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainFragment : BaseFragment(R.layout.fragment_main) {
 
     private val viewModel: MainViewModel by viewModel()
+    private var dialog: Dialog? = null
 
     private val countryClickListener = { countryCode: String ->
         val destination = MainFragmentDirections.actionMainFragmentToDetailsFragment(countryCode)
@@ -59,9 +63,23 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
     }
 
     private fun updateInfo(state: MainViewModel.ViewState) {
-        refreshLayout.isRefreshing = state.loading
+        renderLoading(state.loading)
+        renderSuccess(state.success)
+    }
 
-        val items = state.success ?: return
+    private fun renderLoading(loading: Boolean) {
+        refreshLayout.isRefreshing = false
+        if(loading){
+            dialog = ProgressDialog(requireContext())
+            dialog?.show()
+        }
+        else{
+            dialog?.dismiss()
+        }
+    }
+
+    private fun renderSuccess(spread: List<Spread>?) {
+        val items = spread ?: return
         totalCount.text = items.sumBy { it.infected }.toString()
         (spreadRecyclerView.adapter as SpreadAdapter).setItems(items)
     }

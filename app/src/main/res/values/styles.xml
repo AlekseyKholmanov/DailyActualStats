@@ -15,4 +15,8 @@
         <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
     </style>
 
+    <style name="ProgressDialogTheme" parent="Theme.MaterialComponents.Dialog">
+        <item name="android:windowBackground">@null</item>
+    </style>
+
 </resources>

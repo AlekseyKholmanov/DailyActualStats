@@ -18,10 +18,11 @@ class ChartViewModel(
     private val spreadRepository: SpreadRepository
 ) : ViewModel() {
 
-    private val _info = MutableLiveData<List<Entry>>()
-    val info: LiveData<List<Entry>> = _info
+    private val _info = MutableLiveData<ChartViewState>()
+    val info: LiveData<ChartViewState> = _info
 
     fun getInfo(countyCode: String = "") {
+        _info.value = ChartViewState(loading = true)
         viewModelScope.launch {
             val values = withContext(Dispatchers.IO) {
                 spreadRepository.getSpreadInfo()
@@ -43,8 +44,12 @@ class ChartViewModel(
                         )
                     }
             }
-            _info.value = values
+            _info.value = ChartViewState(loading = false, success = values)
         }
     }
+    class ChartViewState(
+        val loading: Boolean = false,
+        val success: List<Entry>? = null
+    )
 }
 

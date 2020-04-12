@@ -21,13 +21,14 @@ class DetailsViewModel(
     private val spreadRepository: SpreadRepository
 ) : ViewModel() {
 
-    private val _info = MutableLiveData<Triple<List<DetailsCoronaItem>, Int, Int>>()
-    val info: LiveData<Triple<List<DetailsCoronaItem>, Int, Int>> = _info
+    private val _spreadState = MutableLiveData<DetailsSpreadState>()
+    val spreadState: LiveData<DetailsSpreadState> = _spreadState
 
     private val _country = MutableLiveData<CountryEntity>()
     val country: LiveData<CountryEntity> = _country
 
     fun getSpreadInfo(countryCode: String) {
+        _spreadState.value = DetailsSpreadState(loading = true)
         viewModelScope.launch {
             val resp = withContext(Dispatchers.IO) {
                 val info = spreadRepository.getSpreadInfo()
@@ -36,7 +37,7 @@ class DetailsViewModel(
                     it.toItem()
                 }, info.sumBy { it.cases }, info.sumBy { it.deaths })
             }
-            _info.value = resp
+            _spreadState.value = DetailsSpreadState(loading = false, success = resp)
         }
     }
 
@@ -49,4 +50,9 @@ class DetailsViewModel(
             _country.value = response
         }
     }
+
+    class DetailsSpreadState(
+        val loading:Boolean = false,
+        val success: Triple<List<DetailsCoronaItem>, Int, Int>? = null
+    )
 }

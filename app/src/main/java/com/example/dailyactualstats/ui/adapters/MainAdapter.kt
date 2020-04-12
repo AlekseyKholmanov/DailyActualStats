@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dailyactualstats.R
+import com.example.dailyactualstats.ui.adapters.items.Spread
 
 /**
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
@@ -49,4 +50,3 @@ class SpreadHolder(view: View, private val countryClickListener: (String) -> Uni
     }
 }
 
-class Spread(val country: String, val infected: Int, val countryCode:String)
