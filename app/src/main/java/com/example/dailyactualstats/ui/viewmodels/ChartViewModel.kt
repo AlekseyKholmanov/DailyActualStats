@@ -37,11 +37,6 @@ class ChartViewModel(
                         DetailsCoronaItem(date = it.key,
                             infected = it.value.sumBy { it.cases },
                             death = it.value.sumBy { it.deaths })
-                    }.mapIndexed { index, detailsCoronaItem ->
-                        Entry(
-                            index.toFloat(),
-                            detailsCoronaItem.infected.toFloat()
-                        )
                     }
             }
             _info.value = ChartViewState(loading = false, success = values)
@@ -49,7 +44,7 @@ class ChartViewModel(
     }
     class ChartViewState(
         val loading: Boolean = false,
-        val success: List<Entry>? = null
+        val success: List<DetailsCoronaItem>? = null
     )
 }
 

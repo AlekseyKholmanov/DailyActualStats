@@ -20,9 +20,17 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+
     <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/lineCharts"
+        android:id="@+id/lineChartsInfected"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/lineChartsDead"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
 </LinearLayout>

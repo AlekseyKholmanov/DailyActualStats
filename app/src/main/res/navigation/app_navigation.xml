@@ -32,7 +32,8 @@
     <fragment
         android:id="@+id/chartFragment"
         android:name="com.example.dailyactualstats.ui.fragments.ChartFragment"
-        android:label="ChartFragment" >
+        android:label="ChartFragment"
+        tools:layout="@layout/fragment_chart">
         <argument
             android:name="CountryCode"
             app:argType="string" />

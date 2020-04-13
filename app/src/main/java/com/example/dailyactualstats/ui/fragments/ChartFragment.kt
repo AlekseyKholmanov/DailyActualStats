@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.navArgs
 import com.example.dailyactualstats.R
 import com.example.dailyactualstats.base.BaseFragment
+import com.example.dailyactualstats.ui.adapters.items.DetailsCoronaItem
 import com.example.dailyactualstats.ui.dialogs.ProgressDialog
 import com.example.dailyactualstats.ui.viewmodels.ChartViewModel
 import com.github.mikephil.charting.data.Entry
@@ -36,9 +37,18 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
         super.onViewCreated(view, savedInstanceState)
         initToolbar()
         viewModel.info.observe(viewLifecycleOwner, Observer(::renderState))
-        with(lineCharts) {
+        with(lineChartsInfected) {
             setBackgroundColor(Color.WHITE)
             description.text = "infected per day"
+            setTouchEnabled(false)
+            setDrawGridBackground(false)
+            isDragEnabled = false
+            setScaleEnabled(false)
+            setNoDataText("")
+        }
+        with(lineChartsDead) {
+            setBackgroundColor(Color.WHITE)
+            description.text = "dead per day"
             setTouchEnabled(false)
             setDrawGridBackground(false)
             isDragEnabled = false
@@ -52,7 +62,7 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
         renderSuccess(state.success)
     }
 
-    private fun renderSuccess(success: List<Entry>?) {
+    private fun renderSuccess(success: List<DetailsCoronaItem>?) {
         updateChart(success ?: return)
     }
 
@@ -65,20 +75,46 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
         }
     }
 
-    private fun updateChart(info: List<Entry>) {
-        val set = LineDataSet(info, "Infected per day in world  ${args.CountryCode}").apply {
+    private fun updateChart(info: List<DetailsCoronaItem>) {
+
+        val infected = info
+            .mapIndexed { index, detailsCoronaItem ->
+                Entry(
+                    index.toFloat(),
+                    detailsCoronaItem.infected.toFloat()
+                )
+            }
+        val dead = info.mapIndexed { index, detailsCoronaItem ->
+            Entry(
+                index.toFloat(),
+                detailsCoronaItem.death.toFloat()
+            )
+        }
+        val infectedSet = getDataSet(infected, "infected per day")
+        val deadSet = getDataSet(dead, "dead per day")
+        val infectedDataSet = ArrayList<ILineDataSet>()
+        val deadDataSet = ArrayList<ILineDataSet>()
+        infectedDataSet.add(infectedSet)
+        deadDataSet.add(deadSet)
+
+        val infectedLineData = LineData(infectedDataSet)
+        val deadLineData = LineData(deadSet)
+        lineChartsInfected.data = infectedLineData
+        lineChartsDead.data = deadLineData
+
+        lineChartsInfected.invalidate()
+        lineChartsDead.invalidate()
+    }
+
+    private fun getDataSet(entries: List<Entry>, title: String): LineDataSet {
+        return LineDataSet(entries, "$title  ${args.CountryCode}").apply {
             setDrawIcons(false)
             color = Color.BLACK
             lineWidth = 1f
-            circleRadius = 2f
+            circleRadius = 1f
             setDrawCircleHole(false)
             valueTextSize = 5f
             isHighlightEnabled = false
         }
-        val dataSet = ArrayList<ILineDataSet>()
-        dataSet.add(set)
-        val lineData = LineData(dataSet)
-        lineCharts.data = lineData
-        lineCharts.invalidate()
     }
 }
