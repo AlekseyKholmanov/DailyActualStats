@@ -9,6 +9,7 @@ import androidx.navigation.fragment.navArgs
 import com.example.dailyactualstats.R
 import com.example.dailyactualstats.base.BaseFragment
 import com.example.dailyactualstats.ui.adapters.items.DetailsCoronaItem
+import com.example.dailyactualstats.ui.custom.Marker
 import com.example.dailyactualstats.ui.dialogs.ProgressDialog
 import com.example.dailyactualstats.ui.viewmodels.ChartViewModel
 import com.github.mikephil.charting.data.Entry
@@ -28,6 +29,35 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
     private val viewModel: ChartViewModel by viewModel()
 
     private var dialog: Dialog? = null
+
+    val markers = mutableListOf<Marker>().apply {
+        this.add(Marker(value = 10))
+        this.add(Marker(value = 100))
+        this.add(Marker(value = 400))
+        this.add(Marker(value = 130))
+        this.add(Marker(value = 45))
+        this.add(Marker(value = 5))
+        this.add(Marker(value = 20))
+        this.add(Marker(value = 442))
+        this.add(Marker(value = 400))
+        this.add(Marker(value = 22))
+        this.add(Marker(value = 104))
+        this.add(Marker(value = 103))
+        this.add(Marker(value = 65))
+        this.add(Marker(value = 22))
+    }
+
+    val weeks = mutableListOf<String>().apply {
+        this.add("week 1")
+        this.add("week 2")
+        this.add("week 3")
+        this.add("week 4")
+        this.add("week 5")
+        this.add("week 6")
+        this.add("week 7")
+        this.add("week 8")
+        this.add("week 9")
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.getInfo(args.CountryCode)
@@ -37,6 +67,7 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
         super.onViewCreated(view, savedInstanceState)
         initToolbar()
         viewModel.info.observe(viewLifecycleOwner, Observer(::renderState))
+        customChart.setMarkersAndWeeks(markers, weeks)
         with(lineChartsInfected) {
             setBackgroundColor(Color.WHITE)
             description.text = "infected per day"

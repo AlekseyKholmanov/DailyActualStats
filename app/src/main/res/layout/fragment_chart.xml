@@ -20,6 +20,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <com.example.dailyactualstats.ui.custom.LinearGraph
+        android:id="@+id/customChart"
+        android:layout_width="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:layout_height="300dp"/>
+
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/lineChartsInfected"
