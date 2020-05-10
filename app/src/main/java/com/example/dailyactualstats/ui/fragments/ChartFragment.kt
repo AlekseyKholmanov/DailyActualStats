@@ -67,7 +67,6 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
         super.onViewCreated(view, savedInstanceState)
         initToolbar()
         viewModel.info.observe(viewLifecycleOwner, Observer(::renderState))
-        customChart.setMarkersAndWeeks(markers, weeks)
         with(lineChartsInfected) {
             setBackgroundColor(Color.WHITE)
             description.text = "infected per day"
@@ -107,6 +106,8 @@ class ChartFragment : BaseFragment(R.layout.fragment_chart) {
     }
 
     private fun updateChart(info: List<DetailsCoronaItem>) {
+        val forCustom = info.map { Marker(value = it.infected) }
+            customChart.setMarkersAndWeeks(forCustom, weeks)
 
         val infected = info
             .mapIndexed { index, detailsCoronaItem ->

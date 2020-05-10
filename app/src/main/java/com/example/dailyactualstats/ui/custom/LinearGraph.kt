@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.graphics.toRectF
 import com.example.dailyactualstats.R
+import com.example.dailyactualstats.extension.dp
 import com.example.dailyactualstats.extension.getResColor
 import com.example.dailyactualstats.extension.px
 import java.text.NumberFormat
@@ -29,10 +30,10 @@ class LinearGraph @JvmOverloads constructor(
         private var DOTTED_STROKE_WIDTH_DP = 1.px.toFloat()
         private var STROKE_WIDTH_DP = 1.px.toFloat()
         private var TEXT_BG_RADIUS = 8.px.toFloat()
-        private var POINT_RADIUS = 3.px.toFloat()
+        private var POINT_RADIUS = 2.px.toFloat()
         private var WEEK_PADDING = 30.px
         private var WEEK_DISTANCE = 8.px
-        private var GRADUATIONS_BOTTOM_PADDING = 10.px
+        private var GRADUATIONS_BOTTOM_PADDING = 15.px
         private var GRADUATIONS_SIDE_PADDING = 10.px
     }
 
@@ -157,32 +158,14 @@ class LinearGraph @JvmOverloads constructor(
     fun setMarkersAndWeeks(markers: List<Marker>, weeks: List<String>) {
         this.weeks = weeks.toMutableList()
         this.markers = markers
+
+        scaleSpaceToLeaveForGraduations = (width - 2 * GRADUATIONS_SIDE_PADDING) / markers.size
+        weeksDistanceScale = (width / weeks.size).toFloat()
+        textPaint.textSize = weeksDistanceScale / weeks.size / 1.5f
+        graduationsTextPaint.textSize = 6.px.toFloat()
         initGraduation()
+        calcAndInvalidate()
         initWeeks()
-    }
-
-    private fun initWeeks() {
-        val count = weeks.count()
-        val temp = weeks.take(MAX_WEEKS)
-        weeks.clear()
-        weeks.addAll(temp)
-        if (count > MAX_WEEKS) {
-            weeks.add("${count - MAX_WEEKS}+")
-        }
-    }
-
-    private fun initGraduation() {
-        val max = markers.maxBy { it.value }!!
-        if (max.value <= 100) {
-            graduations.add(0)
-            graduations.add(100)
-        }
-        var start = max.value - max.value % 100
-        while (start >= 0) {
-            graduations.add(start)
-            start -= 100
-        }
-        graduations.reverse()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -210,19 +193,56 @@ class LinearGraph @JvmOverloads constructor(
         //compensate for the week text padding
         chartHeight = height - WEEK_PADDING
         chartWidth = width
-        scaleSpaceToLeaveForGraduations = (width - 2 * GRADUATIONS_SIDE_PADDING) / markers.size
-        weeksDistanceScale = (width / weeks.size).toFloat()
-        graduationsDistanceScale = (height / graduations.size) * 0.8.toFloat()
-        textPaint.textSize = weeksDistanceScale / weeks.size / 1.5f
-        graduationsTextPaint.textSize = scaleSpaceToLeaveForGraduations * 0.4.toFloat()
-        calcAndInvalidate()
+
         setMeasuredDimension(chartWidth, height + WEEK_PADDING)
+    }
+
+    override fun onDraw(c: Canvas) {
+        if(markers.isEmpty()){
+            return
+        }
+        //drawGradient(c)
+        //drawGuidelines(c)
+        drawLineAndMarkers(c)
+        drawWeeks(c)
+        drawGraduations(c)
     }
 
     private fun calcAndInvalidate() {
         calcPositions(markers)
         initGradient()
         invalidate()
+    }
+
+    private fun initWeeks() {
+        val count = weeks.count()
+        val temp = weeks.take(MAX_WEEKS)
+        weeks.clear()
+        weeks.addAll(temp)
+        if (count > MAX_WEEKS) {
+            weeks.add("${count - MAX_WEEKS}+")
+        }
+    }
+
+    private fun initGraduation() {
+        val max = markers.maxBy { it.value }!!
+        graduations.clear()
+        var range = 100
+        var forTest = max.value
+        while (forTest / 100 > 1) {
+            forTest /=100
+            range *= 10
+        }
+        for (i in 0..(max.value/range)+1){
+            graduations.add(i*range)
+        }
+
+        val maxGraduation = graduations.maxBy { it }!!
+        val minGraduation = graduations.minBy { it}!!
+        pxPerUnit = (chartHeight) / ( maxGraduation - minGraduation).toFloat()
+        zeroY = maxGraduation * pxPerUnit + paddingTop
+
+        graduationsDistanceScale = ((zeroY) / graduations.size)
     }
 
     private fun initGradient() {
@@ -235,18 +255,23 @@ class LinearGraph @JvmOverloads constructor(
             LinearGradient(0f, paddingTop.toFloat(), 0f, zeroY, colors, null, Shader.TileMode.CLAMP)
     }
 
-    override fun onDraw(c: Canvas) {
-        drawGradient(c)
-        drawGuidelines(c)
-        drawLineAndMarkers(c)
-        drawWeeks(c)
-        drawGraduations(c)
+    private fun calcPositions(markers: List<Marker>) {
+
+        val step =
+            (chartWidth - 2 * GRADUATIONS_SIDE_PADDING - scaleSpaceToLeaveForGraduations) / (markers.size - 1)
+        for ((i, marker) in markers.withIndex()) {
+            val x = step * i + paddingLeft
+            val y = zeroY - marker.value * pxPerUnit
+            marker.currentPos.x = x.toFloat()
+            marker.currentPos.y = y
+        }
     }
 
     private fun drawGraduations(c: Canvas) {
         val x = markers.last().currentPos.x + GRADUATIONS_SIDE_PADDING
+
         //leave some padding in the bottom
-        var step = 0f + GRADUATIONS_BOTTOM_PADDING
+        var step = 0f
         for (value in graduations) {
             val y = zeroY - step
             val formatted = NumberFormat.getIntegerInstance().format(value)
@@ -267,7 +292,6 @@ class LinearGraph @JvmOverloads constructor(
             previousMarker = marker
             //draw marker
             c.drawCircle(marker.currentPos.x, marker.currentPos.y, POINT_RADIUS, pointPaint)
-
         }
     }
 
@@ -304,6 +328,7 @@ class LinearGraph @JvmOverloads constructor(
             guidelinePath.lineTo(marker.currentPos.x, zeroY)
             c.drawPath(guidelinePath, dottedPaint)
         }
+
     }
 
     private fun drawGradient(c: Canvas) {
@@ -317,22 +342,6 @@ class LinearGraph @JvmOverloads constructor(
         path.lineTo(markers.last().currentPos.x, zeroY)
         path.lineTo(paddingLeft.toFloat(), zeroY)
         c.drawPath(path, gradientPaint!!)
-    }
-
-    private fun calcPositions(markers: List<Marker>) {
-        val max = markers.maxBy { it.value }!!
-        val min = markers.minBy { it.value }!!
-        pxPerUnit = (chartHeight) / (max.value - min.value).toFloat()
-        zeroY = max.value * pxPerUnit + paddingTop
-
-        val step =
-            (chartWidth - 2 * GRADUATIONS_SIDE_PADDING - scaleSpaceToLeaveForGraduations) / (markers.size - 1)
-        for ((i, marker) in markers.withIndex()) {
-            val x = step * i + paddingLeft
-            val y = zeroY - marker.value * pxPerUnit
-            marker.currentPos.x = x.toFloat()
-            marker.currentPos.y = y
-        }
     }
 //
 //    private fun drawGuidelines(canvas: Canvas) {
