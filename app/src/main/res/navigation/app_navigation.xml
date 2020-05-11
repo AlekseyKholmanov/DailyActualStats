@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_mainFragment_to_chartFragment"
             app:destination="@id/chartFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_multiplyChartFragment"
+            app:destination="@id/multiplyChartFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
@@ -38,4 +41,8 @@
             android:name="CountryCode"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/multiplyChartFragment"
+        android:name="com.example.dailyactualstats.ui.fragments.MultiplyChartFragment"
+        android:label="MultiplyChartFragment" />
 </navigation>

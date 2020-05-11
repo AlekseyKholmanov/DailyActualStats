@@ -5,8 +5,8 @@ import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
-import androidx.core.graphics.toRectF
 import com.example.dailyactualstats.R
+import com.example.dailyactualstats.extension.dp
 import com.example.dailyactualstats.extension.getResColor
 import com.example.dailyactualstats.extension.px
 import java.text.NumberFormat
@@ -16,7 +16,7 @@ import kotlin.math.min
 /**
  * @author Alexey Kholmanov (alexey.holmanov@cleverpumpkin.ru)
  */
-class LinearGraph @JvmOverloads constructor(
+class MultiplyLinearGraph @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
@@ -95,7 +95,7 @@ class LinearGraph @JvmOverloads constructor(
             invalidate()
         }
 
-    private val graduations: MutableList<Int> = mutableListOf()
+
     private var gradient: LinearGradient? = null
     private var gradientPaint: Paint? = null
 
@@ -112,6 +112,7 @@ class LinearGraph @JvmOverloads constructor(
         this.color = Color.BLUE
         this.typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
         isAntiAlias = true
+        textSize = 6.px.toFloat()
     }
 
     private val textPaintBg: Paint = Paint()
@@ -120,10 +121,14 @@ class LinearGraph @JvmOverloads constructor(
     private var zeroY: Float = 0f
     private var pxPerUnit: Float = 0f
     private var graduationsDistanceScale: Float = 0f
-    private var weeksDistanceScale: Float = 0f
+    private var descriptionsDistanceScale: Float = 0f
+    private var maxCount = 0
 
-    private var markers: List<Marker> = mutableListOf()
+    private var graphValues = mutableMapOf<String,List<Marker>>()
+    private var graphsColor = mutableMapOf<String,Int>()
     private var weeks: MutableList<String> = mutableListOf()
+    private val graduations: MutableList<Int> = mutableListOf()
+    private var step = 0
 
     private val path: Path = Path()
     private val guidelinePath: Path = Path()
@@ -154,17 +159,23 @@ class LinearGraph @JvmOverloads constructor(
         }
     }
 
-    fun setMarkersAndWeeks(markers: List<Marker>, weeks: List<String>) {
-        this.weeks = weeks.toMutableList()
-        this.markers = markers
-
-        //scaleSpaceToLeaveForGraduations = (width - 2 * GRADUATIONS_SIDE_PADDING) / markers.size
-        weeksDistanceScale = (width / weeks.size).toFloat()
-        textPaint.textSize = weeksDistanceScale / weeks.size / 1.5f
-        graduationsTextPaint.textSize = 6.px.toFloat()
+    fun addValue(country:String, values: List<Marker>, color: Int){
+        graphValues[country] = values
+        graphsColor[country] = color
         initGraduation()
-        calcAndInvalidate()
-        initWeeks()
+
+        scaleSpaceToLeaveForGraduations = (width - 2 * GRADUATIONS_SIDE_PADDING) / maxCount
+        calcPositions()
+        invalidate()
+    }
+
+    fun setMarkersAndWeeks(markers: List<Marker>, weeks: List<String>) {
+
+        //descriptionsDistanceScale = (width / weeks.size).toFloat()
+        //textPaint.textSize = descriptionsDistanceScale / weeks.size / 1.5f
+        initGraduation()
+       // initGradient()
+        invalidate()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -197,7 +208,7 @@ class LinearGraph @JvmOverloads constructor(
     }
 
     override fun onDraw(c: Canvas) {
-        if (markers.isEmpty()) {
+        if (graphValues.isEmpty()) {
             return
         }
         drawGradient(c)
@@ -207,32 +218,41 @@ class LinearGraph @JvmOverloads constructor(
         drawGraduations(c)
     }
 
-    private fun calcAndInvalidate() {
-        calcPositions(markers)
-        initGradient()
-        invalidate()
-    }
 
     private fun initWeeks() {
-        val count = weeks.count()
-        val temp = weeks.take(MAX_WEEKS)
-        weeks.clear()
-        weeks.addAll(temp)
-        if (count > MAX_WEEKS) {
-            weeks.add("${count - MAX_WEEKS}+")
-        }
+//        val count = weeks.count()
+//        val temp = weeks.take(MAX_WEEKS)
+//        weeks.clear()
+//        weeks.addAll(temp)
+//        if (count > MAX_WEEKS) {
+//            weeks.add("${count - MAX_WEEKS}+")
+//        }
     }
 
     private fun initGraduation() {
-        val max = markers.maxBy { it.value }!!
+        var tempMaxValue = 0
+        var tempMaxKey = ""
+        graphValues.forEach { (key, markers) ->
+            val max = markers.maxBy { it.value }!!.value
+            val count = markers.count()
+            //find max values in Y Axis
+            if(max > tempMaxValue){
+                tempMaxValue = max
+                tempMaxKey = key
+            }
+            //find max values in X Axis
+            if( maxCount > count){
+                maxCount = count
+            }
+        }
         graduations.clear()
         var range = 100
-        var forTest = max.value
+        var forTest = tempMaxValue
         while (forTest / 100 > 1) {
             forTest /= 100
             range *= 10
         }
-        for (i in 0..(max.value / range) + 1) {
+        for (i in 0..(tempMaxValue / range) + 1) {
             graduations.add(i * range)
         }
 
@@ -254,151 +274,83 @@ class LinearGraph @JvmOverloads constructor(
         }
     }
 
-    private fun calcPositions(markers: List<Marker>) {
-
-        val step =
-            (chartWidth - 2 * GRADUATIONS_SIDE_PADDING - scaleSpaceToLeaveForGraduations) / (markers.size - 1)
-        for ((i, marker) in markers.withIndex()) {
-            val x = step * i + paddingLeft
-            val y = zeroY - marker.value * pxPerUnit
-            marker.currentPos.x = x.toFloat()
-            marker.currentPos.y = y
+    private fun calcPositions() {
+        step =
+            (chartWidth - 2 * GRADUATIONS_SIDE_PADDING) / (maxCount)
+        graphValues.forEach { (key, markers) ->
+            for ((i, marker) in markers.withIndex()) {
+                val x = step * i + paddingLeft
+                val y = zeroY - marker.value * pxPerUnit
+                marker.currentPos.x = x.toFloat()
+                marker.currentPos.y = y
+            }
         }
     }
 
     private fun drawGraduations(c: Canvas) {
-        val x = markers.last().currentPos.x + GRADUATIONS_SIDE_PADDING
+        val x = maxCount*step + GRADUATIONS_SIDE_PADDING
 
         //leave some padding in the bottom
         var step = 0f
         for (value in graduations) {
             val y = zeroY - step
             val formatted = NumberFormat.getIntegerInstance().format(value)
-            c.drawText(formatted, x, y, graduationsTextPaint)
+            c.drawText(formatted, x.toFloat(), y, graduationsTextPaint)
             step += graduationsDistanceScale
         }
     }
 
     private fun drawLineAndMarkers(c: Canvas) {
-        var previousMarker: Marker? = null
-        for (marker in markers) {
-            if (previousMarker != null) {
-                //draw line
-                val p1 = previousMarker.currentPos
-                val p2 = marker.currentPos
-                c.drawLine(p1.x, p1.y, p2.x, p2.y, strokePaint)
+        graphValues.forEach { (country, markers) ->
+            strokePaint.color = graphsColor[country] ?: Color.GRAY
+            pointPaint.color = graphsColor[country] ?: Color.GRAY
+            var previousMarker: Marker? = null
+
+            for (marker in markers) {
+                if (previousMarker != null) {
+                    //draw line
+                    val p1 = previousMarker.currentPos
+                    val p2 = marker.currentPos
+                    c.drawLine(p1.x, p1.y, p2.x, p2.y, strokePaint)
+                }
+                previousMarker = marker
+                //draw marker
+                c.drawCircle(marker.currentPos.x, marker.currentPos.y, POINT_RADIUS, pointPaint)
             }
-            previousMarker = marker
-            //draw marker
-            c.drawCircle(marker.currentPos.x, marker.currentPos.y, POINT_RADIUS, pointPaint)
         }
     }
 
     private fun drawWeeks(c: Canvas) {
-        for ((i, week) in weeks.withIndex()) {
-            textPaint.getTextBounds(week, 0, week.length, textRect)
-            val x = middle(i) + 2 * WEEK_DISTANCE
-            val y = zeroY + 2 * WEEK_DISTANCE
-            val left = x - WEEK_DISTANCE
-            val top = y - textRect.height() - WEEK_DISTANCE
-            val right = x + textRect.width() + WEEK_DISTANCE
-            val bottom = y + WEEK_DISTANCE
-            textRect.set(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-            textPaintBg.color = bgColor
-            textPaintBg.style = Paint.Style.FILL
-            c.drawRoundRect(textRect.toRectF(), TEXT_BG_RADIUS, TEXT_BG_RADIUS, textPaintBg)
-            textPaintBg.color = outlineColor
-            textPaintBg.style = Paint.Style.STROKE
-            textPaintBg.strokeWidth = 1.px.toFloat()
-            c.drawRoundRect(textRect.toRectF(), TEXT_BG_RADIUS, TEXT_BG_RADIUS, textPaintBg)
-            c.drawText(week, x, y, textPaint)
-        }
-    }
-
-    private fun middle(i: Int): Float {
-        return (i * (chartWidth / weeks.count())).toFloat()
-    }
-
-    private fun drawGuidelines(c: Canvas) {
-        for (i in 0..markers.lastIndex step 3) {
-            val marker = markers[i]
-            guidelinePath.reset()
-            guidelinePath.moveTo(marker.currentPos.x, paddingTop.toFloat())
-            guidelinePath.lineTo(marker.currentPos.x, zeroY)
-            c.drawPath(guidelinePath, dottedPaint)
-        }
-
+//        for ((i, week) in weeks.withIndex()) {
+//            textPaint.getTextBounds(week, 0, week.length, textRect)
+//            val x = middle(i) + 2 * WEEK_DISTANCE
+//            val y = zeroY + 2 * WEEK_DISTANCE
+//            val left = x - WEEK_DISTANCE
+//            val top = y - textRect.height() - WEEK_DISTANCE
+//            val right = x + textRect.width() + WEEK_DISTANCE
+//            val bottom = y + WEEK_DISTANCE
+//            textRect.set(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+//            textPaintBg.color = bgColor
+//            textPaintBg.style = Paint.Style.FILL
+//            c.drawRoundRect(textRect.toRectF(), TEXT_BG_RADIUS, TEXT_BG_RADIUS, textPaintBg)
+//            textPaintBg.color = outlineColor
+//            textPaintBg.style = Paint.Style.STROKE
+//            textPaintBg.strokeWidth = 1.px.toFloat()
+//            c.drawRoundRect(textRect.toRectF(), TEXT_BG_RADIUS, TEXT_BG_RADIUS, textPaintBg)
+//            c.drawText(week, x, y, textPaint)
+//        }
     }
 
     private fun drawGradient(c: Canvas) {
-        path.reset()
-        path.moveTo(paddingLeft.toFloat(), zeroY)
-        for (marker in markers) {
-            path.lineTo(marker.currentPos.x, marker.currentPos.y)
-        }
-
-        //close path
-        path.lineTo(markers.last().currentPos.x, zeroY)
-        path.lineTo(paddingLeft.toFloat(), zeroY)
-        c.drawPath(path, gradientPaint!!)
-    }
-//
-//    private fun drawGuidelines(canvas: Canvas) {
-//        for (i in 0..points.lastIndex step 7) {
-//            val point = points[i]
-//            guidelinesPath.reset()
-//            guidelinesPath.moveTo(point.x, paddingTop.toFloat())
-//            guidelinesPath.lineTo(point.x, zeroY)
-//            canvas.drawPath(guidelinesPath, dottedPaint)
-//        }
-//    }
-//
-//    private fun calcPosition(markers: List<Float>) {
-//        val max = markers.maxBy { it }!!
-//        val min = markers.minBy { it }!!
-//        val pxPerUnit = height / (max - min)
-//        zeroY = max * pxPerUnit + marginTop
-//
-//        val step = (width - 2 * padding - scaleWidth) / (markers.size - 1)
-//        for ((i, marker) in markers.withIndex()) {
-//            val x = step * i + paddingLeft
-//            val y = zeroY - marker * pxPerUnit
-//            points.add(Point(x, y))
-//        }
-//    }
-//
-//    private fun drawGradient(canvas: Canvas) {
 //        path.reset()
 //        path.moveTo(paddingLeft.toFloat(), zeroY)
-//        for (point in points) {
-//            path.lineTo(point.x, point.y)
+//        for (marker in markers) {
+//            path.lineTo(marker.currentPos.x, marker.currentPos.y)
 //        }
-//        path.lineTo(points.last().x, zeroY)
+//
+//        //close path
+//        path.lineTo(markers.last().currentPos.x, zeroY)
 //        path.lineTo(paddingLeft.toFloat(), zeroY)
-//
-//
-//        canvas.drawPath(path, gradientPaint)
-//    }
-//
-//    private fun drawLineAndMarkers(canvas: Canvas) {
-//        var previousPoint: Point? = null
-//        for (point in points) {
-//            if (previousPoint != null) {
-//                canvas.drawLine(previousPoint.x, previousPoint.y, point.x, point.y, strokePaint)
-//            }
-//            previousPoint = point
-//            canvas.drawCircle(point.x, point.y, 4f, pointPaint)
-//        }
-//    }
-//
-//    override fun onDraw(canvas: Canvas) {
-//        drawGradient(canvas)
-//        drawGuidelines(canvas)
-//        drawLineAndMarkers(canvas)
-//
-//    }
+//        c.drawPath(path, gradientPaint!!)
+    }
 }
-
-data class Marker(val currentPos: CurrentPosition = CurrentPosition(0f, 0f), val value: Int = 0)
-
-data class CurrentPosition(var x: Float, var y: Float)

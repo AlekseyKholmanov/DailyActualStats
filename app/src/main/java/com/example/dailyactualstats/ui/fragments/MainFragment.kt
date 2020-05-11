@@ -58,6 +58,10 @@ class MainFragment : BaseFragment(R.layout.fragment_main) {
                 val direction = MainFragmentDirections.actionMainFragmentToChartFragment("")
                 findNavController().navigate(direction)
             }
+            R.id.openMultiplyChart -> {
+                val directions = MainFragmentDirections.actionMainFragmentToMultiplyChartFragment()
+                findNavController().navigate(directions)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
